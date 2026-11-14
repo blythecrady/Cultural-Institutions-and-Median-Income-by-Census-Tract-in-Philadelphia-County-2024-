@@ -1,4 +1,4 @@
-# Cultural Institutions and Median Income by Census Tract (2024)
+# Cultural Institutions and Median Income by Census Tract in Philadelphia County (2024)
 **by Blythe Crady**
 **Published November 2026**
 
