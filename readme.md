@@ -3,7 +3,7 @@
 **Published November 2026**
 
 ## About This Map
-This bivariate web map visualizes the spatial relationship between the cultural institutions, specifically museums and art galleries, and median income data by census tract. It uses a white to blue color ramp with 5 classes and the natural breaks classification method. Tracts with no income data are shaded gray. Hovering over an icon or tract displays more detailed information. The basemap is provided by Esri and the map utilizes the [Leaflet](https://leafletjs.com/) library. 
+This bivariate web map visualizes the spatial relationship between cultural institutions, specifically museums and art galleries, and median income data by census tract. It uses a white to blue color ramp with 5 classes and the natural breaks classification method. Tracts with no income data are shaded gray. Hovering over an icon or tract displays more detailed information. The basemap is provided by Esri and the map utilizes the [Leaflet](https://leafletjs.com/) library. 
 
 ## Data Sources
 * Museum and Gallery Point Data: OpenStreetMap contributors, downloaded with [Overpass Turbo](https://overpass-turbo.eu/)
