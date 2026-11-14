@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <title>Cultural Institutions and Median Income by Census Tract (2024)</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.0/dist/leaflet.css" />
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.14.0/css/all.css">
+    <link href="https://fonts.googleapis.com/css?family=Lora" rel="stylesheet">
+    <style>
+        html,
+        body,
+        #map {
+            width: 100%;
+            height: 100%;
+            margin: 0;
+            background: #fff;
+        }
+
+        .legend {
+            font-family: 'Lora', Georgia, serif;
+            line-height: 40px;
+            font-size: 16px;
+            width: 230px;
+            color: #100d0a;
+            padding: 6px 8px;
+            background: rgba(250, 248, 243, 0.85);
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
+            border-radius: 5px;
+        }
+
+        .legend i {
+            width: 20px;
+            height: 20px;
+            float: left;
+            margin-right: 8px;
+            opacity: 0.9;
+        }
+
+        .legend .legend-title {
+            font-weight: bold;
+            line-height: 24px;
+            margin-bottom: 6px;
+        }
+
+        .legend p {
+            font-size: 14px;
+            line-height: 20px;
+            margin: 0;
+        }
+
+        #title {
+            position: absolute;
+            top: 15px;
+            left: 55px;
+            width: 360px;
+            z-index: 1000;
+            font-family: 'Lora', Georgia, serif;
+            background: rgba(250, 248, 243, 0.85);
+            padding: 8px 12px;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
+            border-radius: 5px;
+        }
+
+        #title h1 {
+            margin: 0;
+            font-size: 22px;
+            line-height: 28px;
+            color: #100d0a;
+        }
+
+        .leaflet-tooltip {
+            font-family: 'Lora', Georgia, serif;
+            font-size: 16px;
+            background: #faf8f3;
+            color: #100d0a;
+            border: none;
+            border-radius: 5px;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .leaflet-tooltip:before {
+            display: none;
+        }
+
+        .leaflet-control-scale-line {
+            background: rgba(250, 248, 243, 0.85);
+            color: #100d0a;
+            border-color: #100d0a;
+            font-family: 'Lora', Georgia, serif;
+        }
+    </style>
+    <script src="https://unpkg.com/leaflet@1.7.0/dist/leaflet.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet-ajax/2.1.0/leaflet.ajax.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.0/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/chroma-js/1.3.4/chroma.min.js"></script>
+</head>
+
+<body>
+    <div id="map"></div>
+    <div id="title">
+        <h1>Cultural Institutions and Median Income by Census Tract (2024)</h1>
+    </div>
+    <script>
+        // create map object
+        var mymap = L.map('map', {
+            center: [39.9526, -75.1652],
+            zoom: 11,
+            maxZoom: 18,
+            minZoom: 11,
+            detectRetina: true
+        });
+
+        // add basemap
+        var basemap = L.tileLayer(
+            'https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}', {
+                minZoom: 0,
+                maxZoom: 18,
+                maxNativeZoom: 16,
+                attribution: 'Tiles &copy; Esri'
+            });
+        basemap.addTo(mymap);
+
+
+        var placesLayer = null;
+
+        // icon colors 
+        var colors = ['#222222', '#222222'];
+
+        // marker style classes
+        for (i = 0; i < 2; i++) {
+            $('head').append($("<style> .marker-color-" + (i + 1).toString() + " { color: " + colors[i] +
+                "; font-size: 17px; text-shadow: 1px 0 0 #ffffff, -1px 0 0 #ffffff, 0 1px 0 #ffffff, 0 -1px 0 #ffffff, 1px 1px 0 #ffffff, -1px -1px 0 #ffffff, 1px -1px 0 #ffffff, -1px 1px 0 #ffffff;} </style>"
+            ));
+        }
+
+        // museums and galleries
+        placesLayer = L.geoJson.ajax("assets/philly_points_clipped.geojson", {
+            onEachFeature: function (feature, layer) {
+                // make icon bigger on hover
+                layer.on({
+                    mouseover: function (e) {
+                        e.target._icon.style.fontSize = '24px';
+                    },
+                    mouseout: function (e) {
+                        e.target._icon.style.fontSize = '17px';
+                    }
+                });
+                layer.bindTooltip(feature.properties.name || 'Unnamed place', {
+                    direction: 'right'
+                });
+            },
+
+            pointToLayer: function (feature, latlng) {
+                var id = 0;
+                var icons = ['fa-landmark', 'fa-palette'];
+                if (feature.properties.tourism == "museum") {
+                    id = 0;
+                } else {
+                    id = 1;
+                }
+                return L.marker(latlng, {
+                    icon: L.divIcon({
+                        className: 'fas ' + icons[id] + ' marker-color-' + (id + 1)
+                            .toString()
+                    })
+                });
+            },
+            attribution: 'Places &copy; OpenStreetMap contributors | Income &amp; tracts from the U.S. Census Bureau (ACS 2020-2024) | Map by Blythe'
+        }).addTo(mymap);
+
+        // choropleth color ramp
+        colors = ['#faf8f3', '#bdd7e7', '#6baed6', '#3182bd', '#08519c'];
+
+        // tract style
+        function style(feature) {
+            return {
+                fillColor: setColor(feature.properties.med_income),
+                fillOpacity: 1,
+                weight: 2,
+                opacity: 1,
+                color: '#141414',
+
+            };
+        }
+
+        // census tracts
+        var tractsLayer = L.geoJson.ajax("assets/tracts_median_income_philly.geojson", {
+            style: style,
+            onEachFeature: function (feature, layer) {
+                // fat border on hover
+                layer.on({
+                    mouseover: function (e) {
+                        e.target.setStyle({
+                            weight: 4
+                        });
+                        e.target.bringToFront();
+                    },
+                    mouseout: function (e) {
+                        tractsLayer.resetStyle(e.target);
+                    }
+                });
+                var inc = feature.properties.med_income;
+                var text = (inc === null || inc === undefined || inc === 0) ?
+                    'No income data' :
+                    '$' + Number(inc).toLocaleString('en-US');
+                layer.bindTooltip('<b>' + feature.properties.NAMELSAD +
+                    '</b><br>Median household income: ' +
+                    text, {
+                        sticky: true,
+                        direction: 'right'
+                    });
+            }
+        }).addTo(mymap);
+
+        // income class breaks (natural breaks)
+        function setColor(income) {
+            var id = 0;
+            if (income === null || income === undefined || income === 0) {
+                return '#b8b2a7';
+            }
+            if (income > 95172) {
+                id = 4;
+            } else if (income > 66721 && income <= 95172) {
+                id = 3;
+            } else if (income > 50337 && income <= 66721) {
+                id = 2;
+            } else if (income > 34977 && income <= 50337) {
+                id = 1;
+            } else {
+                id = 0;
+            }
+            return colors[id];
+        }
+        // create and add legend
+        var legend = L.control({
+            position: 'bottomright'
+        });
+
+        legend.onAdd = function () {
+            var div = L.DomUtil.create('div', 'legend');
+            div.innerHTML += '<div class="legend-title">Median Household Income</div>';
+            div.innerHTML += '<i style="background: ' + colors[4] + '; opacity: 1"></i><p>$95,173+</p>';
+            div.innerHTML += '<i style="background: ' + colors[3] +
+                '; opacity: 1"></i><p>$66,722 – $95,172</p>';
+            div.innerHTML += '<i style="background: ' + colors[2] +
+                '; opacity: 1"></i><p>$50,338 – $66,721</p>';
+            div.innerHTML += '<i style="background: ' + colors[1] +
+                '; opacity: 1"></i><p>$34,978 – $50,337</p>';
+            div.innerHTML += '<i style="background: ' + colors[0] + '; opacity: 1"></i><p>$0 – $34,977</p>';
+            div.innerHTML += '<i style="background: #b8b2a7; opacity: 1"></i><p>No data</p>';
+            div.innerHTML += '<hr><div class="legend-title">Place Type</div>';
+            div.innerHTML += '<i class="fas fa-landmark marker-color-1"></i><p>Museum</p>';
+            div.innerHTML += '<i class="fas fa-palette marker-color-2"></i><p>Art gallery</p>';
+            return div;
+        };
+
+        legend.addTo(mymap);
+
+        // add leaflet scale bar
+        L.control.scale({
+            position: 'bottomleft'
+        }).addTo(mymap);
+    </script>
+</body>
+
+</html>
